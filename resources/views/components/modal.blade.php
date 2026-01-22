@@ -94,7 +94,7 @@
                 @endif
 
                 {{-- Body --}}
-                <div @class(['px-6', 'pt-6' => !isset($header), 'pb-6' => !isset($footer)])>
+                <div @class(['px-6', 'pt-6' => !isset($header), 'pb-6'])>
                     {{ $slot }}
                 </div>
 

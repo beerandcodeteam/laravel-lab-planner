@@ -63,7 +63,6 @@ class extends Component
                 required
                 autofocus
             />
-            <x-form.error name="form.email" />
         </div>
 
 

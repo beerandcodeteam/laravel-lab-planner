@@ -339,4 +339,133 @@ public function register(): void
 }
 ```
 
-Isso demonstra o poder do Livewire em separar a lógica de negócios (Forms) da camada de apresentação (Componentes/Views), mantendo o código organizado, reutilizável e fácil de testar.
+---
+
+## 5. Funcionalidades com IA e Livewire
+
+Nesta etapa, vamos criar uma funcionalidade avançada: usar Inteligência Artificial para ajudar o usuário a estruturar sua meta. Usaremos um modal para capturar os dados iniciais e um serviço dedicado para integrar com a LLM (Large Language Model).
+
+### 5.1. Serviço de Integração com IA
+
+Criaremos um serviço `AgentGoalCreationServices` que utiliza o pacote **Prism** para facilitar a comunicação estruturada com a IA.
+
+**Serviço: `app/Services/AgentGoalCreationServices.php`**
+
+Este serviço define o esquema de saída esperado (uma lista de perguntas) e faz a chamada à API.
+
+```php
+class AgentGoalCreationServices
+{
+    // Define a estrutura JSON que esperamos da IA
+    public function questionsOutputSchema(): ObjectSchema
+    {
+       return new ObjectSchema(
+           name: 'questions',
+           description: 'List of questions',
+           properties: [
+               new ArraySchema(
+                   name: 'questions_output',
+                   description: 'Questions output structure',
+                   items: new StringSchema(
+                       name: 'question',
+                       description: 'O enunciado da questão de aprofundamento na meta',
+                   )
+               )
+           ],
+           requiredFields: ['questions_output']
+       );
+    }
+
+    public function create(Goal $goal)
+    {
+        // Chama a IA usando Prism
+        $response = Prism::structured()
+            ->using(Provider::OpenAI, 'gpt-4o-mini') // Modelo rápido e eficiente
+            ->withSchema($this->questionsOutputSchema())
+            ->withPrompt(view('prompts.goal-creation-prompt', ['goal' => $goal]))
+            ->asStructured();
+
+        // Por enquanto, apenas inspecionamos a resposta
+        dd($response);
+    }
+}
+```
+
+**O Prompt: `resources/views/prompts/goal-creation-prompt.blade.php`**
+
+Usamos arquivos Blade para organizar nossos prompts, permitindo injeção dinâmica de dados (variáveis `$goal` e `auth()->user()`).
+
+```markdown
+# CONTEXTO
+Você é um Coach de Carreira Sênior especializado em Planejamento Estratégico.
+...
+
+# DADOS DO USUÁRIO
+- Nome: {{ auth()->user()->name }}
+- Meta: {{ $goal->name }}
+- Deadline: {{ $goal->deadline }}
+...
+
+# RESPOSTA ESPERADA
+[ "pergunta 1", "pergunta 2", ... ]
+```
+
+### 5.2. Componente Home e Modal
+
+Na página inicial (`home.blade.php`), integramos o formulário e o serviço.
+
+**Componente Volt: `resources/views/pages/home.blade.php`**
+
+```php
+new #[Title('Home')] class extends Component {
+    private AgentGoalCreationServices $agentServices;
+    public bool $showGoalModal = false;
+    public GoalForm $form; // Reutilizamos Livewire Forms!
+
+    // Injeção de dependência do serviço
+    public function boot(AgentGoalCreationServices $agentServices)
+    {
+        $this->agentServices = $agentServices;
+    }
+
+    public function newGoal()
+    {
+        // 1. Salva a meta no banco (via Form Object)
+        $goal = $this->form->store();
+
+        if ($goal) {
+            // 2. Aciona o agente de IA para gerar perguntas
+            $this->agentServices->create($goal);
+            
+            // Oculta modal (futuramente redirecionaremos)
+            $this->showGoalModal = false; 
+        }
+    }
+};
+```
+
+**View Blade (Modal):**
+
+Usamos componentes visuais (`x-modal`, `x-form.input`) para montar a interface.
+
+```blade
+<x-modal wire:model="showGoalModal" max-width="lg">
+    <x-slot:header>
+        <h3>Criar nova meta</h3>
+    </x-slot:header>
+
+    <form wire:submit="newGoal" class="flex flex-col gap-y-4">
+        <!-- Bind direto no Form Object -->
+        <x-form.input label="Nome da meta" wire:model="form.name" ... />
+        <x-form.input label="Prazo" wire:model="form.deadline" type="date" ... />
+        <x-form.textarea label="Descreva seu momento atual" wire:model="form.self_situation" ... />
+        <x-form.textarea label="Descreva sua meta" wire:model="form.description" ... />
+    </form>
+
+    <x-slot:footer>
+        <x-button wire:click="newGoal">Confirmar</x-button>
+    </x-slot:footer>
+</x-modal>
+```
+
+Com isso, temos um fluxo completo: o usuário preenche o formulário, o Laravel valida e salva, e em seguida aciona uma IA para gerar conteúdo personalizado com base nos dados inseridos.

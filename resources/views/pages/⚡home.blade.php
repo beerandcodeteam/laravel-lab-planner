@@ -1,14 +1,37 @@
 <?php
 
+use App\Models\Goal;
+use App\Services\AgentGoalCreationServices;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
+use \App\Livewire\Forms\GoalForm;
 
 new
 #[Title('Home')]
-class extends Component
-{
+class extends Component {
+    private AgentGoalCreationServices $agentServices;
     public bool $showGoalModal = false;
+    public GoalForm $form;
+
+
+    public function boot(AgentGoalCreationServices $agentServices)
+    {
+        $this->agentServices = $agentServices;
+    }
+
+    public function newGoal()
+    {
+
+        $goal = $this->form->store();
+
+        if ($goal) {
+
+            $this->agentServices->create($goal);
+
+        }
+
+    }
 };
 ?>
 
@@ -24,50 +47,84 @@ class extends Component
             Este é o layout da área logada com menu lateral.
         </p>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div
-                class="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-6 transition-colors">
-                <div
-                    class="w-10 h-10 rounded-lg bg-primary-lighter dark:bg-primary/20 flex items-center justify-center mb-4">
-                    <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                         stroke-width="2">
+        <div class="flex justify-end my-8">
+            <x-button
+                    wire:click="showGoalModal = true"
+                    variant="primary"
+                    class="cursor-pointer"
+            >
+                <x-slot:iconLeft>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                         stroke="currentColor" class="size-5">
                         <path stroke-linecap="round" stroke-linejoin="round"
-                              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                              d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
                     </svg>
-                </div>
-                <h3 class="font-semibold text-neutral-900 dark:text-white mb-1">Dashboard</h3>
-                <p class="text-sm text-neutral-500 dark:text-neutral-400">Visualize métricas e estatísticas.</p>
-            </div>
-
-            <div
-                class="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-6 transition-colors">
-                <div
-                    class="w-10 h-10 rounded-lg bg-primary-lighter dark:bg-primary/20 flex items-center justify-center mb-4">
-                    <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                         stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                              d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-                    </svg>
-                </div>
-                <h3 class="font-semibold text-neutral-900 dark:text-white mb-1">Usuários</h3>
-                <p class="text-sm text-neutral-500 dark:text-neutral-400">Gerencie usuários do sistema.</p>
-            </div>
-
-            <a href="/design-system"
-               class="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-6 transition-colors hover:border-primary dark:hover:border-primary group">
-                <div
-                    class="w-10 h-10 rounded-lg bg-primary-lighter dark:bg-primary/20 flex items-center justify-center mb-4">
-                    <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                         stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                              d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
-                    </svg>
-                </div>
-                <h3 class="font-semibold text-neutral-900 dark:text-white mb-1 group-hover:text-primary transition-colors">
-                    Design System</h3>
-                <p class="text-sm text-neutral-500 dark:text-neutral-400">Veja todos os componentes.</p>
-            </a>
+                </x-slot:iconLeft>
+                Nova meta
+            </x-button>
         </div>
+
+
+        <x-modal wire:model="showGoalModal" max-width="lg">
+            <x-slot:header>
+                <h3>Criar nova meta</h3>
+            </x-slot:header>
+
+            <form wire:submit="newGoal" class="flex flex-col gap-y-4">
+                <div>
+                    <x-form.input
+                            label="Nome da meta"
+                            placeholder="Digite o nome da sua meta"
+                            wire:model="form.name"
+                            type="text"
+                            name="form.deadline"
+                    />
+                    <x-form.error name="form.name"/>
+                </div>
+
+                <div>
+                    <x-form.input
+                            label="Prazo"
+                            wire:model="form.deadline"
+                            type="date"
+                            name="form.deadline"
+                    />
+                    <x-form.error name="form.deadline"/>
+                </div>
+
+                <div>
+                    <x-form.textarea
+                            label="Descreva seu momento atual"
+                            wire:model="form.self_situation"
+                            name="form.self_situation"
+                            placeholder="Descreva o seu momento atual de forma bastante detalhada"
+                    />
+                    <x-form.error name="form.self_situation"></x-form.error>
+                </div>
+
+                <div>
+                    <x-form.textarea
+                            label="Descreva sua meta"
+                            wire:model="form.description"
+                            name="form.description"
+                            placeholder="Descreva sua meta de forma detalhada"
+                    />
+                    <x-form.error name="form.self_situation"></x-form.error>
+                </div>
+            </form>
+
+            <x-slot:footer>
+                <div class="flex justify-end gap-3">
+                    <x-button variant="secondary" wire:click="showGoalModal = false">
+                        Cancelar
+                    </x-button>
+                    <x-button wire:click="newGoal">
+                        Confirmar
+                    </x-button>
+                </div>
+            </x-slot:footer>
+        </x-modal>
+
 
     </div>
 </div>
