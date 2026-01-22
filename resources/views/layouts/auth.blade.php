@@ -46,7 +46,7 @@
                             Bem-vindo de volta!
                         </h1>
                         <p class="text-lg text-white/80 max-w-md">
-                            Acesse sua conta e continue gerenciando seus projetos de forma simples e eficiente.
+                            Acesse sua conta e continue evoluindo em sua carreira.
                         </p>
 
                         <div class="flex gap-4 pt-4">

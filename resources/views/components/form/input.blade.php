@@ -92,11 +92,4 @@
         @endif
     </div>
 
-    @if($hint && !$hasError)
-        <x-form.hint>{{ $hint }}</x-form.hint>
-    @endif
-
-    @if($name)
-        <x-form.error :name="$name" :bag="$bag" />
-    @endif
 </div>
