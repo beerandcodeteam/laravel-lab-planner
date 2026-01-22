@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\DiagnosisItemType;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -11,12 +12,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('goal_diagnoses', function (Blueprint $table) {
+        Schema::create('diagnosis_item_types', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('goal_id')->constrained();
-            $table->text('description');
+            $table->string('name');
             $table->timestamps();
         });
+
+        DiagnosisItemType::insert([
+            ['name' => 'Domino bem'],
+            ['name' => 'Preciso melhorar'],
+        ]);
     }
 
     /**
@@ -24,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('goal_diagnoses');
+        Schema::dropIfExists('diagnosis_item_types');
     }
 };

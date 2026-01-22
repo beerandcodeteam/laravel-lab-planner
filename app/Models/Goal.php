@@ -17,7 +17,6 @@ class Goal extends Model
         'name',
         'deadline',
         'description',
-        'self_situation',
     ];
 
     /**
@@ -66,8 +65,8 @@ class Goal extends Model
     /**
      * @return HasOne<GoalDiagnosis, $this>
      */
-    public function diagnosis(): HasOne
+    public function diagnoses(): hasMany
     {
-        return $this->hasOne(GoalDiagnosis::class);
+        return $this->hasMany(Diagnosis::class);
     }
 }

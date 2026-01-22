@@ -76,6 +76,20 @@ class extends Component {
             <x-form.error name="form.email"/>
         </div>
 
+        <div>
+            <x-form.label for="phone" required>Telefone</x-form.label>
+            <x-form.input
+                    id="phone"
+                    type="phone"
+                    name="form.phone"
+                    wire:model="form.phone"
+                    placeholder="(99) 99999-9999"
+                    x-mask="(99) 99999-9999"
+                    required
+            />
+            <x-form.error name="form.email"/>
+        </div>
+
         {{-- Password --}}
         <div>
             <x-form.label for="password" required>Senha</x-form.label>
@@ -88,7 +102,6 @@ class extends Component {
                 required
             />
             <x-form.hint>Mínimo de 8 caracteres</x-form.hint>
-            <x-form.error name="form.password"/>
         </div>
 
         {{-- Password Confirmation --}}
@@ -102,7 +115,6 @@ class extends Component {
                 placeholder="••••••••"
                 required
             />
-            <x-form.error name="form.password_confirmation"/>
         </div>
 
         {{-- Terms --}}

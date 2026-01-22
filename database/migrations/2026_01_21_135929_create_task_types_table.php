@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\TaskStep;
+use App\Models\TaskType;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -18,6 +20,11 @@ return new class extends Migration
             $table->string('color')->nullable();
             $table->timestamps();
         });
+
+        TaskType::insert([
+            ['name' => 'single',],
+            ['name' => 'habit',],
+        ]);
     }
 
     /**

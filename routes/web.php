@@ -3,6 +3,13 @@
 use Illuminate\Support\Facades\Route;
 
 Route::livewire('/', 'pages::home')->name('home')->middleware('auth');
+Route::livewire('/goal/{goal}', 'pages::goals.index')
+    ->name('goals.index')
+    ->middleware('auth');
+
+Route::livewire('/diagnosis/{diagnosis}', 'pages::diagnosis.index')
+    ->name('diagnosis.index')
+    ->middleware('auth');
 
 // Auth Routes
 Route::middleware('guest')->group(function () {

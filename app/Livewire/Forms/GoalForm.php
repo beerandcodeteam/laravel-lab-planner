@@ -21,16 +21,12 @@ class GoalForm extends Form
     #[Validate('required|string|min:10|max:5000')]
     public string $description = '';
 
-    #[Validate('required|string|min:10|max:5000')]
-    public string $self_situation = '';
-
     public function setGoal(Goal $goal): void
     {
         $this->goal = $goal;
         $this->name = $goal->name;
         $this->deadline = $goal->deadline->format('Y-m-d');
         $this->description = $goal->description;
-        $this->self_situation = $goal->self_situation;
         $this->goal_situation_id = $goal->goal_situation_id;
     }
 
@@ -39,7 +35,7 @@ class GoalForm extends Form
         $this->validate();
 
         return Goal::create([
-            ...$this->only(['name', 'deadline', 'description', 'self_situation', 'goal_situation_id']),
+            ...$this->only(['name', 'deadline', 'description', 'goal_situation_id']),
             'goal_situation_id' => GoalSituationEnum::InProgress,
             'user_id' => auth()->id(),
         ]);

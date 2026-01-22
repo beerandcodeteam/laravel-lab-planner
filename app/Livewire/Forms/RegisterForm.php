@@ -14,6 +14,8 @@ class RegisterForm extends Form
 
     public string $email = '';
 
+    public string $phone = '';
+
     public string $password = '';
 
     public string $password_confirmation = '';
@@ -23,6 +25,7 @@ class RegisterForm extends Form
         return [
             'name' => 'required|string|min:3|max:255',
             'email' => 'required|string|email|max:255|unique:users,email',
+            'phone' => 'required|string|min:3|max:255',
             'password' => ['required', 'confirmed', Password::min(8)
                 ->letters()
                 ->mixedCase()

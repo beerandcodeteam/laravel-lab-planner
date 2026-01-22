@@ -13,11 +13,16 @@ class extends Component {
     private AgentGoalCreationServices $agentServices;
     public bool $showGoalModal = false;
     public GoalForm $form;
+    public $goals;
 
-
-    public function boot(AgentGoalCreationServices $agentServices)
+    public function mount()
     {
-        $this->agentServices = $agentServices;
+        $this->loadGoals();
+    }
+
+    public function loadGoals()
+    {
+        $this->goals = Goal::where('user_id', auth()->id())->get();
     }
 
     public function newGoal()
@@ -25,11 +30,7 @@ class extends Component {
 
         $goal = $this->form->store();
 
-        if ($goal) {
-
-            $this->agentServices->create($goal);
-
-        }
+        $this->loadGoals();
 
     }
 };
@@ -64,6 +65,23 @@ class extends Component {
             </x-button>
         </div>
 
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Product Card -->
+            @foreach($goals as $goal)
+                <x-card padding="none" :hover="true" :interactive="true">
+                    <x-card.body>
+                        <h3 class="font-semibold text-neutral-900 dark:text-white mb-2">{{ $goal->name }}</h3>
+                        <p class="text-neutral-600 dark:text-neutral-400 text-sm mb-4">
+                            {{ $goal->description }}
+                        </p>
+                        <div class="flex items-center justify-between">
+                            <x-button :href="route('goals.index', $goal->id)"  size="sm">Acompanhar</x-button>
+                        </div>
+                    </x-card.body>
+                </x-card>
+            @endforeach
+        </div>
+
 
         <x-modal wire:model="showGoalModal" max-width="lg">
             <x-slot:header>
@@ -79,7 +97,6 @@ class extends Component {
                             type="text"
                             name="form.deadline"
                     />
-                    <x-form.error name="form.name"/>
                 </div>
 
                 <div>
@@ -89,27 +106,15 @@ class extends Component {
                             type="date"
                             name="form.deadline"
                     />
-                    <x-form.error name="form.deadline"/>
                 </div>
 
                 <div>
                     <x-form.textarea
-                            label="Descreva seu momento atual"
-                            wire:model="form.self_situation"
-                            name="form.self_situation"
-                            placeholder="Descreva o seu momento atual de forma bastante detalhada"
-                    />
-                    <x-form.error name="form.self_situation"></x-form.error>
-                </div>
-
-                <div>
-                    <x-form.textarea
-                            label="Descreva sua meta"
+                            label="Como você quer ser reconhecido"
                             wire:model="form.description"
                             name="form.description"
-                            placeholder="Descreva sua meta de forma detalhada"
+                            placeholder="Descreva aqui qual a bandeira e o motivo da escolha"
                     />
-                    <x-form.error name="form.self_situation"></x-form.error>
                 </div>
             </form>
 
