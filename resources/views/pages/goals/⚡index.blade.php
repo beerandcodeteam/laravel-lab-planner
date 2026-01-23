@@ -97,7 +97,7 @@ new class extends Component {
         @foreach($goal->diagnoses as $diagnosis)
             <x-card padding="none" :hover="true" :interactive="true">
                 <x-card.body>
-                    <h3 class="font-semibold text-neutral-900 dark:text-white mb-2">{{ $diagnosis->created_at->format('d/m/Y') }}</h3>
+                    <h3 class="font-semibold text-neutral-900 dark:text-white mb-2">Diagnostico: {{ $diagnosis->created_at->format('d/m/Y') }}</h3>
                     <p class="text-neutral-600 dark:text-neutral-400 text-sm mb-4">
                         {{ $diagnosis->status->name }}
                     </p>
