@@ -40,7 +40,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Copy docker-compose to EC2
+      - name: Copy docker compose to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -73,11 +73,11 @@ jobs:
             EOF
             
             # Pull e restart
-            docker-compose -f compose-prod.yaml pull
-            docker-compose -f compose-prod.yaml up -d
+            docker compose -f compose-prod.yaml pull
+            docker compose -f compose-prod.yaml up -d
             
             # Migrations
-            docker-compose -f compose-prod.yaml exec -T app php artisan migrate --force
+            docker compose -f compose-prod.yaml exec -T app php artisan migrate --force
             
             # Limpar imagens antigas
             docker image prune -af
