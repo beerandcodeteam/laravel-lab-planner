@@ -1,0 +1,76 @@
+# Dockerfile
+
+# Stage 1: Build do frontend
+FROM node:20-alpine AS frontend
+
+WORKDIR /app
+
+# Copiar arquivos de dependências do npm
+COPY package.json package-lock.json* ./
+
+# Instalar dependências
+RUN npm ci
+
+# Copiar código fonte
+COPY . .
+
+# Build dos assets
+RUN npm run build
+
+# Stage 2: Aplicação PHP
+FROM php:8.4-fpm-alpine AS base
+
+# Instalar dependências do sistema
+RUN apk add --no-cache \
+    git \
+    curl \
+    libpng-dev \
+    oniguruma-dev \
+    libxml2-dev \
+    zip \
+    unzip \
+    nginx \
+    supervisor \
+    libpq-dev
+
+# Instalar extensões PHP
+RUN docker-php-ext-install pdo_pgsql mbstring exif pcntl bcmath gd opcache
+
+# Configurar opcache para produção
+RUN echo "opcache.enable=1" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.memory_consumption=256" >> /usr/local/etc/php/conf.d/opcache.ini \
+    && echo "opcache.max_accelerated_files=20000" >> /usr/local/etc/php/conf.d/opcache.ini
+
+# Copiar Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www/html
+
+# Copiar arquivos de dependências primeiro (cache layer)
+COPY composer.json composer.lock ./
+
+# Instalar dependências (sem dev)
+RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
+
+# Copiar código da aplicação
+COPY . .
+
+# Copiar assets compilados do stage frontend
+COPY --from=frontend /app/public/build ./public/build
+
+# Finalizar instalação do composer
+RUN composer dump-autoload --optimize
+
+# Configurar permissões
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Copiar configurações do Nginx
+COPY docker/nginx/default.conf /etc/nginx/http.d/default.conf
+
+# Copiar configuração do Supervisor
+COPY docker/supervisor/supervisord.conf /etc/supervisord.conf
+
+EXPOSE 80
+
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]

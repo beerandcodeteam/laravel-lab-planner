@@ -1,0 +1,21 @@
+services:
+  app:
+    image: 058264194030.dkr.ecr.us-east-2.amazonaws.com/planner-poc:latest
+    restart: unless-stopped
+    ports:
+      - "9000:80"
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - APP_KEY=${APP_KEY}
+      - DB_CONNECTION=pgsql
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=5432
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/up"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
