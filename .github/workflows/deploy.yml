@@ -77,7 +77,7 @@ jobs:
             FILESYSTEM_DISK=local
             QUEUE_CONNECTION=database
             CACHE_STORE=database
-            APP_URL=http://localhost
+            APP_URL=http://localhost:8000
             EOF
             
             # Pull e restart
