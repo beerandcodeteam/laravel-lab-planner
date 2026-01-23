@@ -46,7 +46,7 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "compose-prod.yml"
+          source: "compose-prod.yaml"
           target: "/opt/planner-poc"
 
       - name: Deploy to EC2
@@ -73,11 +73,11 @@ jobs:
             EOF
             
             # Pull e restart
-            docker-compose -f compose-prod.yml pull
-            docker-compose -f compose-prod.yml up -d
+            docker-compose -f compose-prod.yaml pull
+            docker-compose -f compose-prod.yaml up -d
             
             # Migrations
-            docker-compose -f compose-prod.yml exec -T app php artisan migrate --force
+            docker-compose -f compose-prod.yaml exec -T app php artisan migrate --force
             
             # Limpar imagens antigas
             docker image prune -af
