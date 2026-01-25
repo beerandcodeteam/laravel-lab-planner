@@ -65,6 +65,8 @@ class GenerateLessonEmbeddings extends Command
             ->filter()
             ->implode(' ');
 
+        $fullText = mb_convert_encoding($fullText, 'UTF-8', 'UTF-8');
+
         $chunks = [];
         $position = 0;
         $length = strlen($fullText);
