@@ -78,6 +78,7 @@ jobs:
             QUEUE_CONNECTION=database
             CACHE_STORE=database
             APP_URL=https://beerandcodeworkshops.com.br
+            OPENAI_API_KEY=${{ OPENAI_API_KEY }}
             EOF
             
             # Pull e restart
