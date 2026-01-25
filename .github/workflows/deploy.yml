@@ -64,7 +64,7 @@ jobs:
             # Criar .env
             cat > .env << EOF
             APP_ENV=production
-            APP_DEBUG=false
+            APP_DEBUG=true
             ECR_REGISTRY=${{ secrets.ECR_REGISTRY }}
             IMAGE_TAG=${{ github.sha }}
             APP_KEY=${{ secrets.APP_KEY }}
