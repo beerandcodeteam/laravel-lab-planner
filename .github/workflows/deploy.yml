@@ -63,27 +63,27 @@ jobs:
             
             # Criar .env
             cat > .env << EOF
-             APP_ENV=production
-             APP_DEBUG=false
-             FILESYSTEM_DISK=local
-             APP_KEY=${{ secrets.APP_KEY }}
-             DB_CONNECTION=pgsql
-             DB_HOST=${{ secrets.DB_HOST }}
-             DB_PORT=5432
-             DB_DATABASE=${{ secrets.DB_DATABASE }}
-             DB_USERNAME=${{ secrets.DB_USERNAME }}
-             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-             OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
-             ECR_REGISTRY=${{ secrets.ECR_REGISTRY }}
-             IMAGE_TAG=${{ secrets.github.sha }} 
-             AWS_BUCKET=bc-planner
-             AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-             AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-             AWS_DEFAULT_REGION=us-east-2
-             FILESYSTEM_DISK=disk
-             QUEUE_CONNECTION=database
-             CACHE_STORE=database
-             APP_URL=https://beerandcodeworkshops.com.br
+            APP_ENV=production
+            APP_DEBUG=false
+            FILESYSTEM_DISK=local
+            APP_KEY=${{ secrets.APP_KEY }}
+            DB_CONNECTION=pgsql
+            DB_HOST=${{ secrets.DB_HOST }}
+            DB_PORT=5432
+            DB_DATABASE=${{ secrets.DB_DATABASE }}
+            DB_USERNAME=${{ secrets.DB_USERNAME }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+            ECR_REGISTRY=${{ secrets.ECR_REGISTRY }}
+            IMAGE_TAG=${{ secrets.github.sha }} 
+            AWS_BUCKET=bc-planner
+            AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_DEFAULT_REGION=us-east-2
+            FILESYSTEM_DISK=disk
+            QUEUE_CONNECTION=database
+            CACHE_STORE=database
+            APP_URL=https://beerandcodeworkshops.com.br
             EOF
             
             # Pull e restart

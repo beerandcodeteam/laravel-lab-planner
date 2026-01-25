@@ -4,6 +4,28 @@ services:
     restart: unless-stopped
     ports:
       - "9000:80"
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - FILESYSTEM_DISK=local
+      - APP_KEY=${APP_KEY}
+      - DB_CONNECTION=pgsql
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=5432
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ECR_REGISTRY=${ECR_REGISTRY}
+      - IMAGE_TAG=${github.sha}
+      - AWS_BUCKET=bc-planner
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=us-east-2
+      - FILESYSTEM_DISK=disk
+      - QUEUE_CONNECTION=database
+      - CACHE_STORE=database
+      - APP_URL=https://beerandcodeworkshops.com.br
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/up"]
       interval: 30s
