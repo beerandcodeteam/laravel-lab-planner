@@ -70,10 +70,11 @@ jobs:
             DB_DATABASE=${{ secrets.DB_DATABASE }}
             DB_USERNAME=${{ secrets.DB_USERNAME }}
             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-            AWS_BUCKET=
-            AWS_ACCESS_KEY_ID=
-            AWS_SECRET_ACCESS_KEY=
+            AWS_ACCESS_KEY_ID=${{AWS_ACCESS_KEY_ID}}
+            AWS_SECRET_ACCESS_KEY=${{AWS_SECRET_ACCESS_KEY}}
             AWS_DEFAULT_REGION=us-east-2
+            AWS_BUCKET=bc-planner
+            FILESYSTEM_DISK=s3
             FILESYSTEM_DISK=local
             QUEUE_CONNECTION=database
             CACHE_STORE=database
