@@ -72,7 +72,7 @@ new class extends Component {
         }
 
         auth()->user()->update(['planner_created_at' => now()]);
-        dispatch_sync(new GeneratePlannerJob($this->diagnosis));
+        dispatch(new GeneratePlannerJob($this->diagnosis));
 
         $this->redirect(route('kanban.index'), navigate: true);
     }
