@@ -11,13 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('goal_questions', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('goal_id')->constrained();
-            $table->text('question');
-            $table->text('answer')->nullable();
-            $table->integer('order');
-            $table->timestamps();
+        Schema::table('users', function (Blueprint $table) {
+            $table->dateTime('planner_created_at')->nullable()->after('updated_at');
         });
     }
 
@@ -26,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('goal_questions');
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn('planner_created_at');
+        });
     }
 };

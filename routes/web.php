@@ -11,6 +11,10 @@ Route::livewire('/diagnosis/{diagnosis}', 'pages::diagnosis.index')
     ->name('diagnosis.index')
     ->middleware('auth');
 
+Route::livewire('/kanban', 'pages::kanban.index')
+    ->name('kanban.index')
+    ->middleware('auth');
+
 // Auth Routes
 Route::middleware('guest')->group(function () {
     Route::livewire('/login', 'pages::auth.login')->name('login');

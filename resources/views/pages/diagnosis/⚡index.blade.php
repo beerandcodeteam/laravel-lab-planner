@@ -2,18 +2,23 @@
 
 use App\Enums\DiagnosisItemTypeEnum;
 use App\Enums\DiagnosisPillarEnum;
+use App\Jobs\GeneratePlannerJob;
 use App\Models\Diagnosis;
 use App\Services\AgentDiagnosisServices;
+use App\Services\AgentPlannerServices;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
 new class extends Component {
     public Diagnosis $diagnosis;
     private AgentDiagnosisServices $agentDiagnosisServices;
+    private AgentPlannerServices $agentPlannerServices;
 
-    public function boot(AgentDiagnosisServices $agentDiagnosisServices)
+    public function boot(AgentDiagnosisServices $agentDiagnosisServices, AgentPlannerServices $agentPlannerServices)
     {
         $this->agentDiagnosisServices = $agentDiagnosisServices;
+        $this->agentPlannerServices = $agentPlannerServices;
     }
 
     public function mount(Diagnosis $diagnosis)
@@ -56,7 +61,29 @@ new class extends Component {
 
         $this->diagnosis->refresh();
 
+    }
 
+    public function generateActionPlan()
+    {
+
+        if (!$this->canCreateActionPlan)
+        {
+            return;
+        }
+
+        auth()->user()->update(['planner_created_at' => now()]);
+        dispatch(new GeneratePlannerJob($this->diagnosis));
+
+        $this->redirect(route('kanban.index'), navigate: true);
+    }
+
+    #[Computed]
+    public function canCreateActionPlan()
+    {
+        return true;
+        $user = auth()->user();
+
+        return is_null($user->planner_created_at) || $user->planner_created_at->diffInWeeks(now()) >= 12;
     }
 };
 ?>
@@ -80,7 +107,9 @@ new class extends Component {
         <x-button
                 variant="primary"
                 class="cursor-pointer"
-                wire:click="newDiagnosis"
+                wire:click="generateActionPlan"
+                :disabled="!$this->canCreateActionPlan"
+                wire:loading.attr="disabled"
         >
             <x-slot:iconLeft>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -198,15 +227,21 @@ new class extends Component {
                                         <div class="flex items-center justify-between gap-4">
                                             <span>{{ $item->description }}</span>
                                             @if (!$item->user_selected_at)
-                                            <x-button wire:click="selectItem({{ $item->id }})" class="cursor-pointer" variant="outline" size="sm">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-                                                </svg>
+                                                <x-button wire:click="selectItem({{ $item->id }})"
+                                                          class="cursor-pointer" variant="outline" size="sm">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                         viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                                         class="size-4">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                              d="m4.5 12.75 6 6 9-13.5"/>
+                                                    </svg>
 
-                                            </x-button>
+                                                </x-button>
                                             @else
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 0 0-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 0 1-2.448-2.448 14.9 14.9 0 0 1 .06-.312m-2.24 2.39a4.493 4.493 0 0 0-1.757 4.306 4.493 4.493 0 0 0 4.306-1.758M16.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                     stroke-width="1.5" stroke="currentColor" class="size-6">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                          d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 0 0-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 0 1-2.448-2.448 14.9 14.9 0 0 1 .06-.312m-2.24 2.39a4.493 4.493 0 0 0-1.757 4.306 4.493 4.493 0 0 0 4.306-1.758M16.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"/>
                                                 </svg>
                                             @endif
                                         </div>
@@ -233,14 +268,20 @@ new class extends Component {
                                         <div class="flex items-center justify-between gap-4">
                                             <span>{{ $item->description }}</span>
                                             @if (!$item->user_selected_at)
-                                                <x-button wire:click="selectItem({{ $item->id }})" class="cursor-pointer" variant="outline" size="sm">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                                                <x-button wire:click="selectItem({{ $item->id }})"
+                                                          class="cursor-pointer" variant="outline" size="sm">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                         viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                                         class="size-4">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                              d="m4.5 12.75 6 6 9-13.5"/>
                                                     </svg>
                                                 </x-button>
                                             @else
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 0 0-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 0 1-2.448-2.448 14.9 14.9 0 0 1 .06-.312m-2.24 2.39a4.493 4.493 0 0 0-1.757 4.306 4.493 4.493 0 0 0 4.306-1.758M16.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                     stroke-width="1.5" stroke="currentColor" class="size-6">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                          d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 0 0-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 0 1-2.448-2.448 14.9 14.9 0 0 1 .06-.312m-2.24 2.39a4.493 4.493 0 0 0-1.757 4.306 4.493 4.493 0 0 0 4.306-1.758M16.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"/>
                                                 </svg>
                                             @endif
                                         </div>
@@ -266,14 +307,20 @@ new class extends Component {
                                         <div class="flex items-center justify-between">
                                             <span>{{ $item->description }}</span>
                                             @if (!$item->user_selected_at)
-                                                <x-button wire:click="selectItem({{ $item->id }})" class="cursor-pointer" variant="outline" size="sm">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                                                <x-button wire:click="selectItem({{ $item->id }})"
+                                                          class="cursor-pointer" variant="outline" size="sm">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                         viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                                         class="size-4">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                              d="m4.5 12.75 6 6 9-13.5"/>
                                                     </svg>
                                                 </x-button>
                                             @else
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 0 0-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 0 1-2.448-2.448 14.9 14.9 0 0 1 .06-.312m-2.24 2.39a4.493 4.493 0 0 0-1.757 4.306 4.493 4.493 0 0 0 4.306-1.758M16.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                     stroke-width="1.5" stroke="currentColor" class="size-6">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                          d="M15.59 14.37a6 6 0 0 1-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 0 0 6.16-12.12A14.98 14.98 0 0 0 9.631 8.41m5.96 5.96a14.926 14.926 0 0 1-5.841 2.58m-.119-8.54a6 6 0 0 0-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 0 0-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 0 1-2.448-2.448 14.9 14.9 0 0 1 .06-.312m-2.24 2.39a4.493 4.493 0 0 0-1.757 4.306 4.493 4.493 0 0 0 4.306-1.758M16.5 9a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"/>
                                                 </svg>
                                             @endif
                                         </div>

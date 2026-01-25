@@ -27,11 +27,10 @@ class extends Component {
 
     public function newGoal()
     {
-
+        sleep(5);
         $goal = $this->form->store();
-
+        $this->showGoalModal = false;
         $this->loadGoals();
-
     }
 };
 ?>
@@ -95,7 +94,7 @@ class extends Component {
                             placeholder="Digite o nome da sua meta"
                             wire:model="form.name"
                             type="text"
-                            name="form.deadline"
+                            name="form.name"
                     />
                 </div>
 
@@ -123,7 +122,7 @@ class extends Component {
                     <x-button variant="secondary" wire:click="showGoalModal = false">
                         Cancelar
                     </x-button>
-                    <x-button wire:click="newGoal">
+                    <x-button wire:click="newGoal" wire:loading.attr="disabled">
                         Confirmar
                     </x-button>
                 </div>

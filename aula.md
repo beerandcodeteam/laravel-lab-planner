@@ -13,7 +13,6 @@ Este é um sistema de **Planejamento de Metas** (Planner) que possui as seguinte
 │                                                                         │
 │   User (Usuário)                                                        │
 │     └── Goals (Metas)                                                   │
-│           ├── GoalQuestions (Perguntas da Meta)                         │
 │           ├── Diagnoses (Diagnósticos)                                  │
 │           │     └── DiagnosisItems (Itens do Diagnóstico)               │
 │           └── Tasks (Tarefas)                                           │
@@ -52,19 +51,19 @@ Este é um sistema de **Planejamento de Metas** (Planner) que possui as seguinte
 │ name                                      │
 │ deadline                                  │
 │ description                               │
-└───────┬────────────────┬─────────────────┘
-        │                │
-        │ 1:N            │ 1:N
-        ▼                ▼
-┌───────────────┐  ┌─────────────────┐
-│goal_questions │  │   diagnoses     │◄──────┐
-├───────────────┤  ├─────────────────┤       │
-│ id            │  │ id              │       │
-│ goal_id (FK)  │  │ goal_id (FK)    │       │
-│ question      │  │ diagnosis_      │       │
-│ answer        │  │   status_id(FK) │       │
-│ order         │  │ description     │       │
-└───────────────┘  └────────┬────────┘       │
+└───────────────────────┬─────────────────┘
+                        │
+                        │ 1:N
+                        ▼
+                  ┌─────────────────┐
+                  │   diagnoses     │◄──────┐
+                  ├─────────────────┤       │
+                  │ id              │       │
+                  │ goal_id (FK)    │       │
+                  │ diagnosis_      │       │
+                  │   status_id(FK) │       │
+                  │ description     │       │
+                  └────────┬────────┘       │
                             │                │
                             │ 1:N            │
                             ▼                │
@@ -145,7 +144,6 @@ A ordem é **fundamental** por causa das Foreign Keys. Tabelas referenciadas dev
 
 2. Tabelas Principais (com dependências):
    ├── goals (depende de: users, goal_situations)
-   ├── goal_questions (depende de: goals)
    ├── diagnoses (depende de: goals, diagnosis_statuses)
    ├── diagnosis_items (depende de: diagnoses, diagnosis_item_types, diagnosis_pillars)
    └── tasks (depende de: goals, task_types, task_steps)
@@ -422,43 +420,7 @@ return new class extends Migration
 
 ---
 
-#### 2.4.2 Goal Questions (Perguntas da Meta)
-
-```php
-<?php
-
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
-
-return new class extends Migration
-{
-    public function up(): void
-    {
-        Schema::create('goal_questions', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('goal_id')->constrained();
-            $table->text('question');
-            $table->text('answer')->nullable();
-            $table->integer('order');
-            $table->timestamps();
-        });
-    }
-
-    public function down(): void
-    {
-        Schema::dropIfExists('goal_questions');
-    }
-};
-```
-
-**Pontos de atenção:**
-- `text()` para campos de texto longo
-- `integer('order')` para ordenação das perguntas
-
----
-
-#### 2.4.3 Diagnoses (Diagnósticos)
+#### 2.4.2 Diagnoses (Diagnósticos)
 
 ```php
 <?php
@@ -493,7 +455,7 @@ return new class extends Migration
 
 ---
 
-#### 2.4.4 Diagnosis Items (Itens do Diagnóstico)
+#### 2.4.3 Diagnosis Items (Itens do Diagnóstico)
 
 ```php
 <?php
@@ -531,7 +493,7 @@ return new class extends Migration
 
 ---
 
-#### 2.4.5 Tasks (Tarefas)
+#### 2.4.4 Tasks (Tarefas)
 
 ```php
 <?php
@@ -900,14 +862,6 @@ class Goal extends Model
     }
 
     /**
-     * @return HasMany<GoalQuestion, $this>
-     */
-    public function questions(): HasMany
-    {
-        return $this->hasMany(GoalQuestion::class);
-    }
-
-    /**
      * @return HasMany<Diagnosis, $this>
      */
     public function diagnoses(): HasMany
@@ -924,39 +878,7 @@ class Goal extends Model
 
 ---
 
-#### 3.3.3 GoalQuestion
-
-```php
-<?php
-
-namespace App\Models;
-
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-
-class GoalQuestion extends Model
-{
-    /** @var list<string> */
-    protected $fillable = [
-        'goal_id',
-        'question',
-        'answer',
-        'order',
-    ];
-
-    /**
-     * @return BelongsTo<Goal, $this>
-     */
-    public function goal(): BelongsTo
-    {
-        return $this->belongsTo(Goal::class);
-    }
-}
-```
-
----
-
-#### 3.3.4 Diagnosis
+#### 3.3.3 Diagnosis
 
 ```php
 <?php
@@ -1004,7 +926,7 @@ class Diagnosis extends Model
 
 ---
 
-#### 3.3.5 DiagnosisItem
+#### 3.3.4 DiagnosisItem
 
 ```php
 <?php
@@ -1066,7 +988,7 @@ class DiagnosisItem extends Model
 
 ---
 
-#### 3.3.6 Task
+#### 3.3.5 Task
 
 ```php
 <?php
@@ -1136,10 +1058,8 @@ class Task extends Model
 | Goal | user | User | belongsTo |
 | Goal | situation | GoalSituation | belongsTo |
 | Goal | tasks | Task | hasMany |
-| Goal | questions | GoalQuestion | hasMany |
 | Goal | diagnoses | Diagnosis | hasMany |
 | GoalSituation | goals | Goal | hasMany |
-| GoalQuestion | goal | Goal | belongsTo |
 | Diagnosis | status | DiagnosisStatus | belongsTo |
 | Diagnosis | goal | Goal | belongsTo |
 | Diagnosis | items | DiagnosisItem | hasMany |
@@ -1163,7 +1083,7 @@ $user = User::find(1);
 $goals = $user->goals;
 
 // Buscar as tarefas de uma meta com eager loading
-$goal = Goal::with(['tasks', 'questions', 'diagnoses'])->find(1);
+$goal = Goal::with(['tasks', 'diagnoses'])->find(1);
 
 // Buscar diagnóstico com todos os relacionamentos
 $diagnosis = Diagnosis::with([

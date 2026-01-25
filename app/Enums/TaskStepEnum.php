@@ -2,9 +2,7 @@
 
 namespace App\Enums;
 
-use phpDocumentor\Reflection\Types\Integer;
-
-enum TaskStepEnum: Integer
+enum TaskStepEnum: int
 {
     case Backlog = 1;
     case ToDo = 2;
