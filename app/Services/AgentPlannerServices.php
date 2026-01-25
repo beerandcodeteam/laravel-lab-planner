@@ -79,7 +79,8 @@ class AgentPlannerServices
             ->withTools([
                 $this->technicalDeepDive(),
                 $this->strategyAndPlaning(),
-                $this->behavioralAndSoftSkills()
+                $this->behavioralAndSoftSkills(),
+                $this->storeTasks($diagnosis->goal->id)
             ])
             ->asStructured();
 

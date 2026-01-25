@@ -27,17 +27,7 @@ class GeneratePlannerJob implements ShouldQueue
     public function handle(AgentPlannerServices $agentPlannerServices): void
     {
         Log::info("iniciando plano {$this->diagnosis->id}");
-        $response = $agentPlannerServices->create($this->diagnosis);
-
-        $count = 0;
-        foreach ($response->structured['tasks'] as $task) {
-            $this->diagnosis->goal->tasks()->create([
-                ...$task,
-                'task_step_id' => TaskStepEnum::Backlog,
-                'order' => $count++
-            ]);
-        }
-
+        $agentPlannerServices->create($this->diagnosis);
         Log::info("finalizado plano {$this->diagnosis->id}");
 
     }
