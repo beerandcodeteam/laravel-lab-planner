@@ -41,7 +41,7 @@ class GenerateLessonEmbeddings extends Command
      */
     public function handle()
     {
-        $files = Storage::files('transcriptions');
+        $files = Storage::disk('s3')->files('transcriptions');
 
         $this->info(sprintf('Found %d transcription files', count($files)));
 
@@ -51,7 +51,7 @@ class GenerateLessonEmbeddings extends Command
         foreach ($files as $file) {
             $lessonName = pathinfo($file, PATHINFO_FILENAME);
 
-            $data = json_decode(Storage::get($file), true);
+            $data = json_decode(Storage::disk('s3')->get($file), true);
 
             if (empty($data['segments'])) {
                 continue;
